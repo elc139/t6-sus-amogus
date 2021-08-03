@@ -30,37 +30,10 @@ static const double Delta = 0.001;
 static const double xMid =  0.23701;
 static const double yMid =  0.521;
 
-int main(int argc, char *argv[])
+double func(int procid, int partition, double delta, int width, unsigned char* pic)
 {
-  
-  printf("Fractal v1.6 [serial]\n");
+  for (int frame = procid*partition; frame < procid*partition+partition; frame++) {
 
-  // check command line
-  if (argc != 3) {fprintf(stderr, "usage: %s frame_width num_frames\n", argv[0]); exit(-1);}
-  int width = atoi(argv[1]);
-  if (width < 10) {fprintf(stderr, "error: frame_width must be at least 10\n"); exit(-1);}
-  int frames = atoi(argv[2]);
-  if (frames < 1) {fprintf(stderr, "error: num_frames must be at least 1\n"); exit(-1);}
-  printf("computing %d frames of %d by %d fractal\n", frames, width, width);
-
-  // allocate picture array
-  unsigned char* pic = new unsigned char[frames * width * width];
-
-  // start time
-  timeval start, end;
-  gettimeofday(&start, NULL);
-
-  // compute frames
-  MPI_Init(&argc, &argv);
-
-  int numprocs;
-  MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-  int procid;
-  MPI_Comm_rank(MPI_COMM_WORLD, &procid);
-  double delta = Delta;
-  int partFrames = frames/numprocs;
-  for (int frame = 0; frame < frames; frame++) {
-    if (frame % numprocs != procid) continue;
     const double xMin = xMid - delta;
     const double yMin = yMid - delta;
     const double dw = 2.0 * delta / width;
@@ -82,21 +55,75 @@ int main(int argc, char *argv[])
         pic[frame * width * width + row * width + col] = (unsigned char)depth;
       }
     }
-    delta *= 0.98;
+
+    delta *= 0.98; 
+  
   }
-   
+  return delta;
+}
+
+int main(int argc, char *argv[])
+{
   
+  printf("Fractal v1.6 [serial]\n");
+
+  // check command line
+  if (argc != 3) {fprintf(stderr, "usage: %s frame_width num_frames\n", argv[0]); exit(-1);}
+  int width = atoi(argv[1]);
+  if (width < 10) {fprintf(stderr, "error: frame_width must be at least 10\n"); exit(-1);}
+  int frames = atoi(argv[2]);
+  if (frames < 1) {fprintf(stderr, "error: num_frames must be at least 1\n"); exit(-1);}
+  printf("computing %d frames of %d by %d fractal\n", frames, width, width);
+
+  // allocate picture array
+  unsigned char* pic = new unsigned char[frames * width * width];
+  double auxDelta;
+
+  // start time
+  timeval start, end;
+  gettimeofday(&start, NULL);
+
+  // compute frames
+  MPI_Init(&argc, &argv);
  
+  int numprocs;
+  MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+  int procid;
+  MPI_Comm_rank(MPI_COMM_WORLD, &procid);
   
-  // verify result by writing frames to BMP files
-  if ((width <= 256) && (frames <= 100)) {
-    for (int frame = 0; frame < frames; frame++) {
-      if (frame % numprocs != procid) continue;
-      char name[32];
-      sprintf(name, "fractal%d.bmp", frame + 1000);
-      writeBMP(width, width, &pic[frame * width * width], name);
+  double delta = Delta;
+  int partition = frames/numprocs;
+
+  if(procid == 0){
+    delta = func(procid,partition,delta,width,pic);
+    MPI_Send(&delta, 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
+  }else{
+    int buffer;
+    MPI_Status status;
+    MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, MPI_DOUBLE, &buffer);
+    if(buffer == 1){
+      MPI_Recv(&delta, buffer, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+      delta = func(procid,partition,delta,width,pic);
+      if (procid + 1 != numprocs) {
+          MPI_Send(&delta, 1, MPI_DOUBLE, ++procid, 0, MPI_COMM_WORLD);
+      }
     }
   }
+
+  printf("%lf\n", delta);
+
+  
+
+  // verify result by writing frames to BMP files
+ 
+    if ((width <= 256) && (frames <= 100)) {
+      for (int frame = procid*partition; frame < procid*partition+partition; frame++) {
+        char name[32];
+        sprintf(name, "fractal%d.bmp", frame + 1000);
+        writeBMP(width, width, &pic[frame * width * width], name);
+      }
+    }
   
   delete [] pic;
   
