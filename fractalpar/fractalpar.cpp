@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 
   // allocate picture array
   unsigned char* pic = new unsigned char[frames * width * width];
-  double auxDelta;
 
   // start time
   timeval start, end;
@@ -53,7 +52,6 @@ int main(int argc, char *argv[])
 
   // compute frames
   MPI_Init(&argc, &argv);
-  MPI_Status status;
   int numprocs;
   MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
   int procid;
@@ -101,8 +99,6 @@ int main(int argc, char *argv[])
   // verify result by writing frames to BMP files
   if ((width <= 256) && (frames <= 100)) {
     for (int frame = procid*partition; frame < procid*partition+partition; frame++) {
-      MPI_Barrier(MPI_COMM_WORLD);
-      //if (frame % numprocs != procid) continue;
       char name[32];
       sprintf(name, "fractal%d.bmp", frame + 1000);
       writeBMP(width, width, &pic[frame * width * width], name);
