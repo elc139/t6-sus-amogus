@@ -15,7 +15,7 @@
  
   ### Slides:
   
-  [Slides -> ](https://github.com/elc139/t5-GabrielDiDomenico/tree/master/t6GabrielTiago.pdf)
+  [Slides -> ](https://github.com/elc139/t6-sus-amogus/blob/master/t6GabrielTiago.pdf)
   
   ### Referências:
   
