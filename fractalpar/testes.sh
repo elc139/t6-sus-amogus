@@ -1,0 +1,9 @@
+mpiexec -np 2 fractalpar 256 32 > resultado.txt
+mpiexec -np 2 fractalpar 1024 32 >> resultado.txt
+mpiexec -np 2 fractalpar 1024 64 >> resultado.txt
+mpiexec -np 4 fractalpar 256 32 >> resultado.txt
+mpiexec -np 4 fractalpar 1024 32 >> resultado.txt
+mpiexec -np 4 fractalpar 1024 64 >> resultado.txt
+mpiexec -np 8 fractalpar 256 32 >> resultado.txt
+mpiexec -np 8 fractalpar 1024 32 >> resultado.txt
+mpiexec -np 8 fractalpar 1024 64 >> resultado.txt

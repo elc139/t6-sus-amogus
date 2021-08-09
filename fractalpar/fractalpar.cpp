@@ -25,7 +25,6 @@ Author: Martin Burtscher
 #include "fractalpar.h"
 #include "mpi.h"
 
-
 static const double Delta = 0.001;
 static const double xMid =  0.23701;
 static const double yMid =  0.521;
@@ -33,7 +32,7 @@ static const double yMid =  0.521;
 int main(int argc, char *argv[])
 {
   
-  printf("Fractal v1.6 [serial]\n");
+  //printf("Fractal v1.6 [serial]\n");
 
   // check command line
   if (argc != 3) {fprintf(stderr, "usage: %s frame_width num_frames\n", argv[0]); exit(-1);}
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
   if (width < 10) {fprintf(stderr, "error: frame_width must be at least 10\n"); exit(-1);}
   int frames = atoi(argv[2]);
   if (frames < 1) {fprintf(stderr, "error: num_frames must be at least 1\n"); exit(-1);}
-  printf("computing %d frames of %d by %d fractal\n", frames, width, width);
+  //printf("computing %d frames of %d by %d fractal\n", frames, width, width);
 
   // allocate picture array
   unsigned char* pic = new unsigned char[frames * width * width];
@@ -56,17 +55,18 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
   int procid;
   MPI_Comm_rank(MPI_COMM_WORLD, &procid);
+
+  printf("Teste utilizando %d processos, %d frames, %d pixeis de largura:\n", numprocs, frames, width);
+  printf("Processo num %d\n", procid);
   
   double delta = Delta;
   int partition = frames/numprocs;
 
   for(int frame = 0; frame < procid*partition; frame++){
     delta *= 0.98; 
-    
   }
   // printf("delta - %lf ", delta);
     
-  
   for (int frame = procid*partition; frame < procid*partition+partition; frame++) {
       const double xMin = xMid - delta;
       const double yMin = yMid - delta;
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
       delta *= 0.98; 
     
     }
-    printf("delta - %lf ", delta);
+    //printf("delta - %lf ", delta);
   
 
   // verify result by writing frames to BMP files
@@ -113,5 +113,6 @@ int main(int argc, char *argv[])
   printf("compute time: %.4f s\n", runtime);
 
   MPI_Finalize();
+  
   return 0;
 }
