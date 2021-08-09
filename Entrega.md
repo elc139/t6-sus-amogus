@@ -11,11 +11,11 @@
   
   ### Código-fonte:
   
-  [Solução -> ](https://github.com/elc139/t5-GabrielDiDomenico/tree/master/code)
+  [Solução -> Fractal MPI](https://github.com/elc139/t5-GabrielDiDomenico/tree/master/code)
  
   ### Slides:
   
-  [Slides -> ](https://github.com/elc139/t6-sus-amogus/blob/master/t6GabrielTiago.pdf)
+  [Slides -> Fractal MPI](https://github.com/elc139/t6-sus-amogus/blob/master/t6GabrielTiago.pdf)
   
   ### Referências:
   
